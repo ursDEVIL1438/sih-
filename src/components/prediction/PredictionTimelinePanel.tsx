@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
-import { Clock, Calendar, AlertTriangle, ArrowRight, Activity } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { StatusBadge } from '../layout/StatusBadge';
 
 export const PredictionTimelinePanel: React.FC = () => {
-  const { forecastTimeline, state, updateState } = useSimulation();
+  const { forecastTimeline, updateState } = useSimulation();
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
 
   const activeStep = forecastTimeline[activeStepIndex] || forecastTimeline[0];
@@ -28,7 +28,7 @@ export const PredictionTimelinePanel: React.FC = () => {
             PREDICTION TIMELINE (NOW → 48 HOURS)
           </h3>
         </div>
-        <StatusBadge status="MODEL OUTPUT" label="HYDRO FORECAST" />
+        <StatusBadge status="API" label="OPEN-METEO HOURLY" />
       </div>
 
       {/* Timeline Selector Buttons */}
@@ -68,7 +68,7 @@ export const PredictionTimelinePanel: React.FC = () => {
                 TIMELINE OFFSET: {activeStep.offsetLabel} ({activeStep.offsetHours} HOURS)
               </span>
               <span className="text-[10px] text-slate-400">
-                Projected Rainfall: <strong className="text-white">{activeStep.expectedRainfall} mm/hr</strong>
+                Forecast Rainfall: <strong className="text-white">{activeStep.expectedRainfall} mm/hr</strong>
               </span>
             </div>
           </div>
@@ -80,12 +80,12 @@ export const PredictionTimelinePanel: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
           <div className="bg-dark-950 p-2 rounded border border-slate-800/80">
-            <span className="text-slate-400 block text-[10px]">POTENTIAL AFFECTED ZONES</span>
-            <span className="text-white font-bold">{activeStep.affectedAreasCount} Lowland Regions</span>
+            <span className="text-slate-400 block text-[10px]">DATA PROVENANCE</span>
+            <span className="text-cyan-400 font-bold text-[10px]">{activeStep.sourceLabel}</span>
           </div>
           <div className="bg-dark-950 p-2 rounded border border-slate-800/80">
-            <span className="text-slate-400 block text-[10px]">HYDRO IMPACT ACTION</span>
-            <span className="text-amber-400 font-bold">{activeStep.recommendedWarning}</span>
+            <span className="text-slate-400 block text-[10px]">RECOMMENDED ACTION</span>
+            <span className="text-amber-400 font-bold text-[10px]">{activeStep.recommendedWarning}</span>
           </div>
         </div>
       </div>

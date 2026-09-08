@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSimulation } from '../../context/SimulationContext';
-import { ShieldAlert, Clock, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import { StatusBadge } from '../layout/StatusBadge';
 import { motion } from 'framer-motion';
 
@@ -29,7 +29,7 @@ export const NextAreaAtRisk: React.FC = () => {
             NEXT AREA AT RISK
           </h3>
         </div>
-        <StatusBadge status="MODEL OUTPUT" label="MODEL ESTIMATE" />
+        <StatusBadge status="MODEL ESTIMATE" label="SPATIAL PROPAGATION" />
       </div>
 
       {/* Hero Card Layout */}
@@ -100,7 +100,7 @@ export const NextAreaAtRisk: React.FC = () => {
 
       {/* WHY IS IT DANGEROUS? */}
       <div className="p-3 bg-dark-950 rounded-lg border border-slate-800 space-y-1.5 text-xs">
-        <span className="text-cyan-400 font-bold uppercase text-[10.5px] block">WHY IS ZONE C HIGH RISK?</span>
+        <span className="text-cyan-400 font-bold uppercase text-[10.5px] block">PRIMARY RISK DRIVERS:</span>
         <div className="space-y-1 text-slate-300">
           {nextAreaPrediction.primaryCauses.map((cause) => (
             <div key={cause} className="flex items-center gap-1.5 text-[11px]">

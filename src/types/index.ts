@@ -2,19 +2,41 @@ export type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH' | 'VERY HIGH' | 'CRITICAL';
 
 export type OperationalMode = 'BEFORE' | 'DURING' | 'AFTER';
 
-export type SystemDataStatus = 'LIVE' | 'OFFICIAL' | 'API' | 'HISTORICAL' | 'SIMULATED' | 'MODEL OUTPUT' | 'DEMO';
+export type SystemDataStatus = 'LIVE' | 'OFFICIAL' | 'API' | 'HISTORICAL' | 'DEGRADED' | 'MODEL ESTIMATE' | 'SIMULATED' | 'MODEL OUTPUT' | 'DEMO' | 'UNAVAILABLE';
 
 export interface StormSimulationState {
-  rainfall: number; // mm/hr (10 - 150)
+  rainfall: number; // mm/hr
   durationHours: number; // 1 - 24
-  riverLevel: number; // meters (0.5 - 6.5)
-  soilSaturation: number; // % (10 - 100)
-  drainageCapacity: number; // % (10 - 90)
-  slopeDegrees: number; // degrees (5 - 45)
+  riverLevel: number; // meters
+  soilSaturation: number; // %
+  drainageCapacity: number; // %
+  slopeDegrees: number; // degrees
   timelineMinute: number; // -120 to +120
-  futureOffsetHours: number; // 0, 1, 3, 6, 12, 24
+  futureOffsetHours: number; // 0, 6, 12, 24, 48
   preset: 'NORMAL' | 'HEAVY' | 'EXTREME' | 'CUSTOM';
   selectedRegion: string;
+  activeLocationId?: string;
+  locationName?: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface DataSourceHealth {
+  id: string;
+  name: string;
+  status: 'CONNECTED' | 'DELAYED' | 'UNAVAILABLE';
+  lastUpdated: string;
+  providerName: string;
+}
+
+export interface ConfidenceBreakdown {
+  scorePct: number; // 0 - 100
+  freshWeatherAvailable: boolean;
+  riverStationAvailable: boolean;
+  terrainDataAvailable: boolean;
+  forecastAvailable: boolean;
+  soilSensorAvailable: boolean;
+  reasons: string[];
 }
 
 export interface CalculatedIntelligence {
@@ -22,14 +44,15 @@ export interface CalculatedIntelligence {
   riskLevel: RiskLevel;
   timeToImpactMinutes: number;
   confidenceScore: number; // %
+  confidenceBreakdown: ConfidenceBreakdown;
   uncertaintyMargin: number; // ±%
   estimatedDepthMeters: number;
-  floodExtentRadiusKm?: number;
-  historicalSimilarityPct?: number;
+  floodExtentRadiusKm: number;
+  historicalSimilarityPct: number;
   pressureScore?: number;
   modelAgreements?: { name: string; type: string; score: number }[];
   naturalLanguageExplanation: string;
-  shapContributions: { feature: string; weight: number; description: string }[];
+  shapContributions: { feature: string; weight: number; description: string; currentValue: string }[];
   affectedPopulation: {
     total: number;
     highRisk: number;
@@ -41,6 +64,8 @@ export interface CalculatedIntelligence {
     hospitals: number;
     shelters: number;
   };
+  dataTimestamp: string;
+  dataStatus: SystemDataStatus;
 }
 
 export interface NextAreaPrediction {
@@ -76,7 +101,7 @@ export interface SaferAreaOption {
   roadStatus: 'OPEN' | 'WARNING' | 'CLOSED';
   shelterAvailable: boolean;
   shelterName: string;
-  recommendationLabel: 'RELATIVELY SAFER' | 'LOWER PROJECTED RISK';
+  recommendationLabel: 'COMPARATIVELY LOWER RISK' | 'MODERATE ELEVATION SAFEGUARD';
   lat: number;
   lng: number;
 }
@@ -109,6 +134,9 @@ export interface WarningAlert {
   projectedRiskPct: number;
   escalationMinutes: number;
   recommendedAction: string;
+  isOfficialDHM: boolean;
+  officialSource?: string;
+  dispatchStatus: 'READY' | 'NOT SENT' | 'SIMULATION / PREVIEW' | 'SENT';
 }
 
 export type WeatherSymbolIcon = '🌧️' | '⛈️' | '☁️' | '🌤️' | '☀️' | '🌨️' | '💨' | '🌊' | '⚠️';
@@ -125,11 +153,14 @@ export interface WeatherLocationPoint {
   tempC: number;
   humidityPct: number;
   windKmH: number;
+  pressureHpa?: number;
   riverLevelM: number;
   soilSaturationPct: number;
   currentRiskPct: number;
   predictedRiskPct: number;
   predictionTimeLabel: string;
+  lastUpdated?: string;
+  isLive?: boolean;
 }
 
 export interface HistoricalFloodHotspot {
@@ -143,6 +174,7 @@ export interface HistoricalFloodHotspot {
   mostAffectedMonths: string;
   severityLabel: string;
   majorEvents: string[];
+  historicalSusceptibilityScore?: number;
 }
 
 export interface ForecastTimelineStep {
@@ -154,14 +186,52 @@ export interface ForecastTimelineStep {
   riskLevel: RiskLevel;
   affectedAreasCount: number;
   recommendedWarning: string;
+  sourceLabel: string;
 }
 
 export interface NepalDistrictRisk {
   districtId: string;
   name: string;
+  region: string;
+  lat: number;
+  lng: number;
   currentConditionSymbol: WeatherSymbolIcon;
   currentConditionLabel: string;
+  currentRainfall: number;
+  forecastRainfall: number;
   predictedRiskPct: number;
   expectedImpact: 'LOW' | 'MODERATE' | 'HIGH' | 'VERY HIGH' | 'EXTREME';
   primaryCause: string;
+  riverStationName?: string;
+  riverStatus?: string;
+  lastUpdated: string;
+  dataProvenance: 'OPEN-METEO + DHM LIVE' | 'MODEL ESTIMATE FROM NEAREST GRID';
+}
+
+export interface RiverGaugeStation {
+  id: string;
+  stationName: string;
+  riverName: string;
+  district: string;
+  region: string;
+  lat: number;
+  lng: number;
+  waterLevelMeters: number;
+  warningLevelMeters: number;
+  dangerLevelMeters: number;
+  status: 'SAFE' | 'WARNING_RISING' | 'ABOVE_WARNING' | 'ABOVE_DANGER' | 'RAPIDLY_RISING';
+  trend: 'RISING' | 'FALLING' | 'STEADY';
+  rateOfChangeMetersPerHr: number;
+  lastUpdated: string;
+  source: 'Nepal DHM';
+}
+
+export interface LocationSearchResult {
+  id: string;
+  name: string;
+  region: string;
+  country: string;
+  lat: number;
+  lng: number;
+  elevation: number;
 }

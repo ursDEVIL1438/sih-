@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSimulation } from '../../context/SimulationContext';
-import { ShieldCheck, MapPin, Navigation, Compass, Radio } from 'lucide-react';
+import { ShieldCheck, MapPin, Navigation, Radio } from 'lucide-react';
 import { StatusBadge } from '../layout/StatusBadge';
 
 function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth radius in km
+  const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
@@ -16,16 +16,21 @@ function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: num
 }
 
 export const SaferAreas: React.FC = () => {
-  const { saferAreas } = useSimulation();
+  const { saferAreas, state } = useSimulation();
 
-  // User live location state (default Tirupati Command Center basin: 13.638, 79.420)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; isLiveGPS: boolean }>({
-    lat: 13.638,
-    lng: 79.420,
+    lat: state.lat || 27.7172,
+    lng: state.lng || 85.3240,
     isLiveGPS: false
   });
 
-  const [selectedZoneId, setSelectedZoneId] = useState<string>(saferAreas[0]?.zoneId || 'ZONE-F');
+  useEffect(() => {
+    if (state.lat && state.lng) {
+      setUserLocation({ lat: state.lat, lng: state.lng, isLiveGPS: false });
+    }
+  }, [state.lat, state.lng]);
+
+  const [selectedZoneId, setSelectedZoneId] = useState<string>(saferAreas[0]?.zoneId || 'SAFE-RIDGE-NORTH');
 
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -37,10 +42,7 @@ export const SaferAreas: React.FC = () => {
             isLiveGPS: true
           });
         },
-        () => {
-          // Fallback location if permission denied
-          setUserLocation({ lat: 13.638, lng: 79.420, isLiveGPS: false });
-        },
+        () => {},
         { enableHighAccuracy: true, timeout: 5000 }
       );
     }
@@ -55,17 +57,17 @@ export const SaferAreas: React.FC = () => {
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
           <h3 className="font-extrabold text-xs text-white uppercase tracking-wider">
-            RECOMMENDED SAFER NEARBY AREAS
+            COMPARATIVELY LOWER-RISK NEARBY AREAS
           </h3>
         </div>
-        <StatusBadge status="MODEL OUTPUT" label="RELATIVELY SAFER" />
+        <StatusBadge status="API" label="ELEVATION & DISTANCE" />
       </div>
 
       {/* Live User Telemetry Bar */}
       <div className="flex items-center justify-between p-2 rounded-lg bg-dark-950 border border-slate-800 text-[11px]">
         <div className="flex items-center gap-2 text-cyan-300">
           <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-          <span className="font-bold">YOUR LIVE LOCATION:</span>
+          <span className="font-bold">LOCATION:</span>
           <span className="text-white font-mono">{userLocation.lat.toFixed(3)}° N, {userLocation.lng.toFixed(3)}° E</span>
         </div>
         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -73,7 +75,7 @@ export const SaferAreas: React.FC = () => {
             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
             : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
         }`}>
-          {userLocation.isLiveGPS ? 'GPS LOCKED' : 'COMMAND LOCATION'}
+          {userLocation.isLiveGPS ? 'GPS LOCKED' : 'MONITORED ZONE'}
         </span>
       </div>
 
@@ -91,7 +93,7 @@ export const SaferAreas: React.FC = () => {
           <div className="flex items-center justify-between text-xs pt-1 border-t border-emerald-500/30">
             <div className="flex items-center gap-1 text-white">
               <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Distance from Live Location:</span>
+              <span>Distance from Location:</span>
               <strong className="text-emerald-400 font-extrabold text-sm ml-1">{selectedLiveDist} km</strong>
             </div>
             <span className="text-amber-400 font-bold">ETA ~{selectedArea.etaMinutes} min</span>
@@ -99,7 +101,7 @@ export const SaferAreas: React.FC = () => {
         </div>
       )}
 
-      {/* List of Safer Area Options */}
+      {/* List of Lower-Risk Area Options */}
       <div className="space-y-2">
         {saferAreas.map((sa) => {
           const liveDist = calculateDistanceKm(userLocation.lat, userLocation.lng, sa.lat, sa.lng);
@@ -127,14 +129,14 @@ export const SaferAreas: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-300 pt-1">
                 <div>
-                  Live Distance: <strong className="text-emerald-400 font-extrabold">{liveDist} km</strong>
+                  Distance: <strong className="text-emerald-400 font-extrabold">{liveDist} km</strong>
                 </div>
                 <div>ETA: <strong className="text-amber-400">~{sa.etaMinutes} min</strong></div>
                 <div>Elevation: <strong className="text-cyan-400">{sa.elevationMeters} m</strong></div>
               </div>
 
               <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/80">
-                <span>Road: <strong className="text-emerald-400">{sa.roadStatus}</strong></span>
+                <span>Road Status: <strong className="text-emerald-400">{sa.roadStatus}</strong></span>
                 <span>Shelter: <strong className="text-slate-200">{sa.shelterName}</strong></span>
               </div>
             </div>

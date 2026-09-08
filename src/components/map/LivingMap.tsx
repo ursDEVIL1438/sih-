@@ -78,11 +78,17 @@ const historicalHotspotIcon = L.divIcon({
   iconAnchor: [12, 12]
 });
 
-// Map Recenter Controller
+// Map Recenter Controller & Leaflet API Access Provider
 const ChangeView: React.FC<{ center: [number, number] }> = ({ center }) => {
   const map = useMap();
   useEffect(() => {
     map.setView(center);
+    (window as any).leafletMap = map;
+    const scaleControl = L.control.scale({ imperial: false, position: 'bottomleft' });
+    scaleControl.addTo(map);
+    return () => {
+      scaleControl.remove();
+    };
   }, [center, map]);
   return null;
 };

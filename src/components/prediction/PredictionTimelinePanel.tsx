@@ -7,7 +7,8 @@ export const PredictionTimelinePanel: React.FC = () => {
   const { forecastTimeline, updateState } = useSimulation();
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
 
-  const activeStep = forecastTimeline[activeStepIndex] || forecastTimeline[0];
+  const safeForecastTimeline = forecastTimeline?.length ? forecastTimeline : [];
+  const activeStep = safeForecastTimeline[activeStepIndex] || safeForecastTimeline[0] || null;
 
   const getRiskBadgeColor = (level: string) => {
     switch (level) {
@@ -18,6 +19,25 @@ export const PredictionTimelinePanel: React.FC = () => {
       default: return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40';
     }
   };
+
+  if (!activeStep) {
+    return (
+      <div className="glass-panel p-4 rounded-xl space-y-3 font-mono select-none">
+        <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-cyan-400" />
+            <h3 className="font-extrabold text-xs text-white uppercase tracking-wider">
+              PREDICTION TIMELINE (NOW → 48 HOURS)
+            </h3>
+          </div>
+          <StatusBadge status="API" label="OPEN-METEO HOURLY" />
+        </div>
+        <div className="p-3 text-xs text-slate-300">
+          Forecast data is loading. Please wait a moment.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="glass-panel p-4 rounded-xl space-y-3 font-mono select-none">
@@ -33,7 +53,7 @@ export const PredictionTimelinePanel: React.FC = () => {
 
       {/* Timeline Selector Buttons */}
       <div className="grid grid-cols-5 gap-1.5 p-1 bg-dark-950 rounded-lg border border-slate-800">
-        {forecastTimeline.map((step, idx) => {
+        {safeForecastTimeline.map((step, idx) => {
           const isSelected = idx === activeStepIndex;
           return (
             <button

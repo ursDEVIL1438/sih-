@@ -62,8 +62,7 @@ export async function fetchOpenMeteoRealTimeData(lat: number, lng: number): Prom
       'relative_humidity_2m',
       'wind_speed_10m',
       'wind_gusts_10m',
-      'soil_moisture_0_to_7cm',
-      'surface_runoff'
+      'soil_moisture_0_to_7cm'
     ].join(',');
 
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=${currentParams}&hourly=${hourlyParams}&forecast_days=3`;

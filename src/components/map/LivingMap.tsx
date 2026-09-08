@@ -266,6 +266,16 @@ export const LivingMap: React.FC = () => {
         )}
       </div>
 
+      {/* Animated Weather & Flood Overlay */}
+      <div className="pointer-events-none absolute inset-0 z-[400] overflow-hidden">
+        <div className="cloud-cloud cloud-1">☁️</div>
+        <div className="cloud-cloud cloud-2">☁️</div>
+        <div className="cloud-cloud cloud-3">☁️</div>
+        <div className="flood-wave flood-wave-1" />
+        <div className="flood-wave flood-wave-2" />
+        <div className="flood-wave flood-wave-3" />
+      </div>
+
       {/* Bottom Disclaimer Banner */}
       <div className="absolute bottom-2 left-2 right-2 z-[1000] bg-dark-950/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-amber-500/30 text-[10px] text-amber-300 flex items-center justify-between">
         <div className="flex items-center gap-1.5">

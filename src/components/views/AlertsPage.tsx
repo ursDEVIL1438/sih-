@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSimulation } from '../../context/SimulationContext';
-import { Bell, Smartphone, Radio, Volume2, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Bell, Smartphone, Radio, Volume2 } from 'lucide-react';
 import { StatusBadge } from '../layout/StatusBadge';
 
 export const AlertsPage: React.FC = () => {
@@ -12,12 +12,11 @@ export const AlertsPage: React.FC = () => {
       timestamp: earlyWarning.timestamp,
       level: earlyWarning.level,
       targetZone: earlyWarning.targetZone,
-      recipientsCount: 24850,
-      deliveryState: 'DISPATCHED',
-      messageEn: `EMERGENCY ALERT: ${earlyWarning.level} for ${earlyWarning.targetZone}. Projected risk ${earlyWarning.projectedRiskPct}% in ~${earlyWarning.escalationMinutes} mins due to ${state.rainfall} mm/hr torrential rainfall. ${earlyWarning.recommendedAction}`,
+      deliveryState: earlyWarning.dispatchStatus,
+      messageEn: `EMERGENCY ALERT: ${earlyWarning.level} for ${earlyWarning.targetZone}. Projected risk ${earlyWarning.projectedRiskPct}% in ~${earlyWarning.escalationMinutes} mins due to ${state.rainfall} mm/hr rainfall. ${earlyWarning.recommendedAction}`,
       messageHi: `आपातकालीन चेतावनी: ${earlyWarning.targetZone} के लिए ${earlyWarning.level}। भारी वर्षा के कारण आगामी ${earlyWarning.escalationMinutes} मिनटों में ${earlyWarning.projectedRiskPct}% बाढ़ का जोखिम। सुरक्षित स्थान पर जाएं।`,
+      messageNp: `आपतकालीन चेतावनी: ${earlyWarning.targetZone} को लागि ${earlyWarning.level}। अत्यधिक वर्षाको कारण आगामी ${earlyWarning.escalationMinutes} मिनेटमा ${earlyWarning.projectedRiskPct}% बाढीको जोखिम। सुरक्षित स्थानमा जानुहोस्।`,
       messageTe: `అత్యవసర హెచ్చరిక: ${earlyWarning.targetZone} లో ${earlyWarning.level}। రాబోయే ${earlyWarning.escalationMinutes} నిమిషాల్లో ${earlyWarning.projectedRiskPct}% వరద ముప్పు. సురక్షిత ప్రాంతాలకు వెళ్లండి.`,
-      messageTa: `அவசர எச்சரிக்கை: ${earlyWarning.targetZone} இல் ${earlyWarning.level}. அடுத்த ${earlyWarning.escalationMinutes} நிமிடங்களில் ${earlyWarning.projectedRiskPct}% வெள்ள அபாயம்.`,
     }
   ];
 
@@ -30,7 +29,7 @@ export const AlertsPage: React.FC = () => {
             MULTILINGUAL EARLY WARNING BROADCAST HUB
           </h2>
         </div>
-        <StatusBadge status="MODEL OUTPUT" label="EARLY WARNING DISPATCH" />
+        <StatusBadge status="API" label="EARLY WARNING DISPATCH" />
       </div>
 
       <div className="space-y-4">
@@ -47,13 +46,17 @@ export const AlertsPage: React.FC = () => {
                 </span>
                 <span className="text-white font-bold text-xs">{alert.targetZone}</span>
               </div>
-              <span className="text-slate-400 text-xs">{alert.timestamp} • {alert.recipientsCount.toLocaleString()} Citizens Targeted</span>
+              <span className="text-slate-400 text-xs">{alert.timestamp}</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
               <div className="p-3 bg-dark-900 rounded border border-slate-800 space-y-1">
                 <span className="text-cyan-400 font-bold block text-[10px]">ENGLISH BROADCAST</span>
                 <p className="text-slate-200">{alert.messageEn}</p>
+              </div>
+              <div className="p-3 bg-dark-900 rounded border border-slate-800 space-y-1">
+                <span className="text-cyan-400 font-bold block text-[10px]">NEPALI (नेपाली) BROADCAST</span>
+                <p className="text-slate-200">{alert.messageNp}</p>
               </div>
               <div className="p-3 bg-dark-900 rounded border border-slate-800 space-y-1">
                 <span className="text-cyan-400 font-bold block text-[10px]">HINDI (हिंदी) BROADCAST</span>
@@ -63,19 +66,14 @@ export const AlertsPage: React.FC = () => {
                 <span className="text-cyan-400 font-bold block text-[10px]">TELUGU (తెలుగు) BROADCAST</span>
                 <p className="text-slate-200">{alert.messageTe}</p>
               </div>
-              <div className="p-3 bg-dark-900 rounded border border-slate-800 space-y-1">
-                <span className="text-cyan-400 font-bold block text-[10px]">TAMIL (தமிழ்) BROADCAST</span>
-                <p className="text-slate-200">{alert.messageTa}</p>
-              </div>
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1 text-emerald-400"><Smartphone className="w-3.5 h-3.5" /> SMS: BROADCAST READY</span>
-                <span className="flex items-center gap-1 text-emerald-400"><Radio className="w-3.5 h-3.5" /> SIREN: STANDBY</span>
-                <span className="flex items-center gap-1 text-emerald-400"><Volume2 className="w-3.5 h-3.5" /> PUSH: BROADCAST</span>
+              <div className="flex items-center gap-4 text-slate-300">
+                <span className="flex items-center gap-1"><Smartphone className="w-3.5 h-3.5 text-cyan-400" /> SMS ADVISORY GATEWAY</span>
+                <span className="flex items-center gap-1"><Radio className="w-3.5 h-3.5 text-cyan-400" /> PUBLIC BROADCAST FEED</span>
               </div>
-              <span className="text-cyan-400 font-bold">STATE: {alert.deliveryState}</span>
+              <span className="text-cyan-400 font-bold">DISPATCH STATUS: {alert.deliveryState}</span>
             </div>
           </div>
         ))}

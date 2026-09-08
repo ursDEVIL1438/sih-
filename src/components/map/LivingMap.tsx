@@ -29,6 +29,7 @@ import {
   Wind
 } from 'lucide-react';
 import { StatusBadge } from '../layout/StatusBadge';
+import LocalizedOverlays from './LocalizedOverlays';
 
 const createWeatherSymbolIcon = (symbol: string, color: string) => {
   return L.divIcon({
@@ -266,14 +267,13 @@ export const LivingMap: React.FC = () => {
         )}
       </div>
 
-      {/* Animated Weather & Flood Overlay */}
+      {/* Animated Weather & Flood Overlay - localized to affected areas */}
       <div className="pointer-events-none absolute inset-0 z-[400] overflow-hidden">
-        <div className="cloud-cloud cloud-1">☁️</div>
-        <div className="cloud-cloud cloud-2">☁️</div>
-        <div className="cloud-cloud cloud-3">☁️</div>
-        <div className="flood-wave flood-wave-1" />
-        <div className="flood-wave flood-wave-2" />
-        <div className="flood-wave flood-wave-3" />
+        <LocalizedOverlays
+          activeWeatherPoints={activeWeatherPoints}
+          activeRiskZones={activeRiskZones}
+          layers={layers}
+        />
       </div>
 
       {/* Bottom Disclaimer Banner */}

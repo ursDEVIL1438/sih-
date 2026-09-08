@@ -3,6 +3,7 @@ import { useSimulation } from '../../context/SimulationContext';
 import { StatusBadge } from './StatusBadge';
 import { MONITORED_LOCATIONS } from '../../data/locations';
 import { Zap, Thermometer, Wind, Globe, RefreshCw, Cpu } from 'lucide-react';
+import AlertButton from './AlertButton';
 
 export const Header: React.FC = () => {
   const { 
@@ -101,6 +102,9 @@ export const Header: React.FC = () => {
           status={intel.dataStatus === 'LIVE' ? 'LIVE' : intel.dataStatus === 'API' ? 'API' : 'HISTORICAL'} 
           label={intel.dataStatus === 'LIVE' ? 'LIVE DATA FUSION' : intel.dataStatus} 
         />
+        <div className="ml-2">
+          <AlertButton />
+        </div>
       </div>
     </header>
   );

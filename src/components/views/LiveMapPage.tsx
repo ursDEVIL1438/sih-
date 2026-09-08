@@ -1,5 +1,5 @@
 import React from 'react';
-import { LivingMap } from '../map/LivingMap';
+import { ModernTerrainMap } from '../map/ModernTerrainMap';
 import { StatusBadge } from '../layout/StatusBadge';
 import { Map, Layers, ShieldCheck } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export const LiveMapPage: React.FC = () => {
       </div>
 
       <div className="flex-1 w-full rounded-xl overflow-hidden min-h-0 border border-slate-800">
-        <LivingMap />
+        <ModernTerrainMap />
       </div>
     </div>
   );

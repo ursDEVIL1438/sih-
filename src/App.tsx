@@ -3,6 +3,7 @@ import { SimulationProvider, useSimulation } from './context/SimulationContext';
 import { Header } from './components/layout/Header';
 import { Navigation } from './components/layout/Navigation';
 import { ShowcaseOverlay } from './components/layout/ShowcaseOverlay';
+import ErrorBoundary from './components/layout/ErrorBoundary';
 
 // Core Streamlined Views
 import { LandingPage } from './components/views/LandingPage';
@@ -54,7 +55,9 @@ const MainAppContent: React.FC = () => {
         <Navigation />
 
         <main className="flex-1 overflow-hidden relative bg-[#030712]">
-          {renderActiveView()}
+          <ErrorBoundary>
+            {renderActiveView()}
+          </ErrorBoundary>
         </main>
       </div>
 

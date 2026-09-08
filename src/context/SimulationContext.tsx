@@ -49,6 +49,17 @@ interface SimulationContextType {
   refreshLiveData: () => Promise<void>;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  // Performance tuning for visualizations
+  particleLimit: number;
+  setParticleLimit: (v: number) => void;
+  lifetimeScale: number;
+  setLifetimeScale: (v: number) => void;
+  force2D: boolean;
+  setForce2D: (v: boolean) => void;
+  savedPresets: Record<string, { particleLimit: number; lifetimeScale: number }> | {};
+  saveDisplayPreset: (name: string, pl: number, ls: number) => void;
+  deleteDisplayPreset: (name: string) => void;
+  applyDisplayPreset: (name: string) => void;
 }
 
 const defaultState: StormSimulationState = {
@@ -73,6 +84,10 @@ export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children
   const [state, setState] = useState<StormSimulationState>(defaultState);
   const [activeTab, setActiveTab] = useState<string>('command-center');
   const [showHistoricalHotspots, setShowHistoricalHotspots] = useState<boolean>(true);
+  const [particleLimit, setParticleLimit] = useState<number>(500);
+  const [lifetimeScale, setLifetimeScale] = useState<number>(1.0);
+  const [force2D, setForce2D] = useState<boolean>(false);
+  const [savedPresets, setSavedPresets] = useState<Record<string, { particleLimit: number; lifetimeScale: number }>>({});
   const [isFetchingData, setIsFetchingData] = useState<boolean>(false);
   const [fusionStore, setFusionStore] = useState<DataFusionStoreState | null>(null);
 
@@ -99,6 +114,18 @@ export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Initial load & Auto-refresh timer (every 3 minutes)
   useEffect(() => {
+    // load persisted visualization prefs
+    try {
+      const pl = localStorage.getItem('sim:particleLimit');
+      const ls = localStorage.getItem('sim:lifetimeScale');
+      if (pl) setParticleLimit(Number(pl));
+      if (ls) setLifetimeScale(Number(ls));
+      const f2 = localStorage.getItem('sim:force2D');
+      if (f2) setForce2D(f2 === '1');
+      const sp = localStorage.getItem('sim:presets');
+      if (sp) setSavedPresets(JSON.parse(sp));
+    } catch (e) { /* ignore storage errors */ }
+
     const lat = state.lat || 27.7172;
     const lng = state.lng || 85.3240;
     const locId = state.activeLocationId || 'KTM';
@@ -112,6 +139,42 @@ export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children
 
     return () => clearInterval(intervalId);
   }, [state.activeLocationId, loadLiveDataForLocation]);
+
+  // persist particle settings
+  useEffect(() => {
+    try {
+      localStorage.setItem('sim:particleLimit', String(particleLimit));
+      localStorage.setItem('sim:lifetimeScale', String(lifetimeScale));
+      localStorage.setItem('sim:force2D', force2D ? '1' : '0');
+      localStorage.setItem('sim:presets', JSON.stringify(savedPresets || {}));
+    } catch (e) { /* ignore */ }
+  }, [particleLimit, lifetimeScale]);
+
+  // keep presets persistence updated when savedPresets changes
+  useEffect(() => {
+    try { localStorage.setItem('sim:presets', JSON.stringify(savedPresets || {})); } catch (e) { /* ignore */ }
+  }, [savedPresets]);
+
+  const saveDisplayPreset = (name: string, pl: number, ls: number) => {
+    if (!name) return;
+    setSavedPresets(prev => ({ ...(prev || {}), [name]: { particleLimit: pl, lifetimeScale: ls } }));
+  };
+
+  const deleteDisplayPreset = (name: string) => {
+    setSavedPresets(prev => {
+      const copy = { ...(prev || {}) };
+      delete copy[name];
+      return copy;
+    });
+  };
+
+  const applyDisplayPreset = (name: string) => {
+    const p = savedPresets[name];
+    if (p) {
+      setParticleLimit(p.particleLimit);
+      setLifetimeScale(p.lifetimeScale);
+    }
+  };
 
   // Derived intelligence & dynamic state
   const intel = fusionStore?.intel || {
@@ -252,7 +315,17 @@ export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children
         toggleHistoricalHotspots: () => setShowHistoricalHotspots((prev) => !prev),
         refreshLiveData,
         activeTab,
-        setActiveTab
+        setActiveTab,
+        particleLimit,
+        setParticleLimit,
+        lifetimeScale,
+        setLifetimeScale,
+        force2D,
+        setForce2D,
+        savedPresets,
+        saveDisplayPreset,
+        deleteDisplayPreset,
+        applyDisplayPreset
       }}
     >
       {children}
